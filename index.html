@@ -1,34 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Catch the Plen - Speed Mode</title>
+  <title>Catch the Emoji - Chaos Face Edition</title>
   <style>
     body {
-      background-color: #fff5f5;
+      background: linear-gradient(135deg, #ffe4e1, #d0f0ff);
       margin: 0;
       overflow: hidden;
       font-family: 'Segoe UI', sans-serif;
     }
 
-    #plen {
+    #emoji {
       position: absolute;
       font-size: 80px;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
+      user-select: none;
       transition: all 0.1s ease;
     }
 
-    #score, #timer {
+    #score, #timer, #best {
       position: fixed;
       top: 10px;
-      font-size: 22px;
+      font-size: 20px;
       background: white;
-      padding: 10px 15px;
+      padding: 8px 15px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
 
     #score {
       left: 10px;
+    }
+
+    #best {
+      left: 160px;
     }
 
     #timer {
@@ -40,70 +50,123 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 36px;
+      font-size: 32px;
       background: black;
       color: white;
       padding: 30px;
       border-radius: 20px;
+      text-align: center;
       display: none;
+    }
+
+    #restartBtn {
+      margin-top: 15px;
+      font-size: 18px;
+      padding: 10px 20px;
+      background: #ff00aa;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+
+    #restartBtn:hover {
+      background: #cc0088;
     }
   </style>
 </head>
 <body>
 
 <div id="score">Score: 0</div>
+<div id="best">Best: 0</div>
 <div id="timer">Time: 20</div>
-<div id="plen">🛩️</div>
-<div id="gameover">Time’s Up!<br>Your Score: <span id="finalScore"></span></div>
+<div id="emoji">💀</div>
+<div id="gameover">
+  Time’s Up!<br>
+  Your Score: <span id="finalScore"></span><br>
+  <button id="restartBtn">Restart</button>
+</div>
 
 <script>
-  const plen = document.getElementById("plen");
+  const emoji = document.getElementById("emoji");
   const scoreDisplay = document.getElementById("score");
   const timerDisplay = document.getElementById("timer");
   const gameOverScreen = document.getElementById("gameover");
   const finalScore = document.getElementById("finalScore");
+  const restartBtn = document.getElementById("restartBtn");
+  const bestDisplay = document.getElementById("best");
+
+  const emojiList = ["💀", "☠️", "😊", "😅", "🥶", "🤬", "😈", "🤡", "👽", "👻", "🐶"];
 
   let score = 0;
   let timeLeft = 20;
+  let bestScore = localStorage.getItem("bestScore") || 0;
   let gameRunning = true;
+  let moveInterval, timerInterval;
 
-  function movePlen() {
+  bestDisplay.innerText = "Best: " + bestScore;
+
+  function moveEmoji() {
     if (!gameRunning) return;
     const maxX = window.innerWidth - 100;
     const maxY = window.innerHeight - 100;
     const x = Math.random() * maxX;
     const y = Math.random() * maxY;
-    plen.style.left = x + "px";
-    plen.style.top = y + "px";
+    emoji.style.left = x + "px";
+    emoji.style.top = y + "px";
+    emoji.innerText = emojiList[Math.floor(Math.random() * emojiList.length)];
   }
 
-  plen.addEventListener("click", () => {
+  function startGame() {
+    score = 0;
+    timeLeft = 20;
+    gameRunning = true;
+    scoreDisplay.innerText = "Score: 0";
+    timerDisplay.innerText = "Time: 20";
+    emoji.style.display = "flex";
+    gameOverScreen.style.display = "none";
+
+    moveInterval = setInterval(moveEmoji, 1600);
+    timerInterval = setInterval(() => {
+      if (!gameRunning) return;
+      timeLeft--;
+      timerDisplay.innerText = "Time: " + timeLeft;
+      if (timeLeft <= 0) {
+        endGame();
+      }
+    }, 1000);
+
+    moveEmoji();
+  }
+
+  function endGame() {
+    gameRunning = false;
+    clearInterval(moveInterval);
+    clearInterval(timerInterval);
+    emoji.style.display = "none";
+    finalScore.innerText = score;
+    gameOverScreen.style.display = "block";
+
+    if (score > bestScore) {
+      bestScore = score;
+      localStorage.setItem("bestScore", bestScore);
+      bestDisplay.innerText = "Best: " + bestScore;
+    }
+  }
+
+  emoji.addEventListener("click", () => {
     if (!gameRunning) return;
     score++;
     scoreDisplay.innerText = "Score: " + score;
-    movePlen();
+    moveEmoji();
   });
 
-  const moveInterval = setInterval(movePlen, 600); // fast movement
+  restartBtn.addEventListener("click", startGame);
 
-  const timerInterval = setInterval(() => {
-    if (!gameRunning) return;
-    timeLeft--;
-    timerDisplay.innerText = "Time: " + timeLeft;
-
-    if (timeLeft <= 0) {
-      gameRunning = false;
-      clearInterval(moveInterval);
-      clearInterval(timerInterval);
-      plen.style.display = "none";
-      finalScore.innerText = score;
-      gameOverScreen.style.display = "block";
-    }
-  }, 1000);
-
-  // Start game
-  movePlen();
+  // Start game on load
+  startGame();
 </script>
 
 </body>
 </html>
+
