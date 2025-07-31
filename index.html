@@ -1,17 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Catch the Plen!</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Catch the Plen - Speed Mode</title>
+  <style>
+    body {
+      background-color: #fff5f5;
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    #plen {
+      position: absolute;
+      font-size: 80px;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+
+    #score, #timer {
+      position: fixed;
+      top: 10px;
+      font-size: 22px;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #score {
+      left: 10px;
+    }
+
+    #timer {
+      right: 10px;
+    }
+
+    #gameover {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      background: black;
+      color: white;
+      padding: 30px;
+      border-radius: 20px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <h1>Catch the Plen! 💀</h1>
-  <div id="game">
-    <p>Score: <span id="score">0</span></p>
-    <p>Time: <span id="time">30</span>s</p>
-    <button id="startBtn">Start Game</button>
-  </div>
-  <script src="script.js"></script>
+
+<div id="score">Score: 0</div>
+<div id="timer">Time: 20</div>
+<div id="plen">🛩️</div>
+<div id="gameover">Time’s Up!<br>Your Score: <span id="finalScore"></span></div>
+
+<script>
+  const plen = document.getElementById("plen");
+  const scoreDisplay = document.getElementById("score");
+  const timerDisplay = document.getElementById("timer");
+  const gameOverScreen = document.getElementById("gameover");
+  const finalScore = document.getElementById("finalScore");
+
+  let score = 0;
+  let timeLeft = 20;
+  let gameRunning = true;
+
+  function movePlen() {
+    if (!gameRunning) return;
+    const maxX = window.innerWidth - 100;
+    const maxY = window.innerHeight - 100;
+    const x = Math.random() * maxX;
+    const y = Math.random() * maxY;
+    plen.style.left = x + "px";
+    plen.style.top = y + "px";
+  }
+
+  plen.addEventListener("click", () => {
+    if (!gameRunning) return;
+    score++;
+    scoreDisplay.innerText = "Score: " + score;
+    movePlen();
+  });
+
+  const moveInterval = setInterval(movePlen, 600); // fast movement
+
+  const timerInterval = setInterval(() => {
+    if (!gameRunning) return;
+    timeLeft--;
+    timerDisplay.innerText = "Time: " + timeLeft;
+
+    if (timeLeft <= 0) {
+      gameRunning = false;
+      clearInterval(moveInterval);
+      clearInterval(timerInterval);
+      plen.style.display = "none";
+      finalScore.innerText = score;
+      gameOverScreen.style.display = "block";
+    }
+  }, 1000);
+
+  // Start game
+  movePlen();
+</script>
+
 </body>
 </html>
